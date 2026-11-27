@@ -2,6 +2,80 @@
 
 This file records builds of this repository from a fresh clone. Each section was written after its build, and the commit that adds or updates this file changes nothing else.
 
+## Build 3: measurable outcome spaces
+
+- Commit built: `b4d04536712a23cfb199273c019ed167ae79e0dc` (adds `TheoremS/Meas/`, the model with measurable outcome spaces and its proof).
+- Where: a Slurm compute node (`rye-02`), job 2030656, 4 CPUs requested and 6 allocated (Slurm's share for the 24 GB memory request), 27 November 2026, 10:57:59 to 11:06:25 PST.
+- Toolchain: elan installed fresh in the job folder, then `leanprover/lean4:v4.35.0` (Lean 4.35.0, commit `eb6cafb7290e8bd5f2937522d8d804f58f02bafc`, x86_64 Linux). Empty Lake and Mathlib caches at the start.
+- Steps, each with exit code 0:
+  1. `git clone` of a bundle of the commit above; `git rev-parse HEAD` matched it.
+  2. `grep -rnE "sorry|admit|native_decide|^axiom|unsafe" TheoremS/` found nothing (this covers `TheoremS/Meas/`).
+  3. `lake exe cache get`: 9,031 Mathlib files downloaded and unpacked.
+  4. `lake build`: 9,067 jobs, completed successfully (301 s wall, peak memory 8.8 GB). The job log keeps only the last 40 lines of build output; the warnings in them are four `Try this` suggestions in `TheoremS/Meas/Joint.lean`, one deprecated lemma name and four `haveILetI` style-linter notes.
+  5. `lake env lean checks/Axioms.lean`.
+
+Output of the check file for the model with measurable outcome spaces (the output for the finite and countable models is the same as in Builds 1 and 2):
+
+```
+def TheoremS.Meas.TheoremSMeasGen : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (Ω : ℕ → Type) [inst_4 : (m : ℕ) → MeasurableSpace (Ω m)]
+      [∀ (m : ℕ), Nonempty (Ω m)] (A : Meas.Alg N K Ω) (ρ : Fin N → Meas.HistFam N K Ω),
+      (∀ (x : Fin N), A.IsHistory x (ρ x)) →
+        A.ZeroError ρ →
+          ENNReal.ofReal (2 / Real.arcsin (2 / √↑N) * (Real.pi / 8 + 1 / 4) * (1 - 2 / ↑N)) ≤ (∑ x, A.cost (ρ x)) / ↑N
+def TheoremS.Meas.TheoremSMeasGen' : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (Ω : ℕ → Type) [inst_4 : (m : ℕ) → MeasurableSpace (Ω m)]
+      [∀ (m : ℕ), Nonempty (Ω m)] (A : Meas.Alg N K Ω) (ρ : Fin N → Meas.HistFam N K Ω),
+      (∀ (x : Fin N), A.IsHistory x (ρ x)) →
+        A.ZeroError ρ → ENNReal.ofReal ((Real.pi / 8 + 1 / 4) * √↑N - 4 / √↑N) ≤ (∑ x, A.cost (ρ x)) / ↑N
+def TheoremS.Meas.TheoremSMeas : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (Ω : ℕ → Type) [inst_4 : (m : ℕ) → MeasurableSpace (Ω m)]
+      [∀ (m : ℕ), StandardBorelSpace (Ω m)] [∀ (m : ℕ), Nonempty (Ω m)] (A : Meas.Alg N K Ω)
+      (ρ : Fin N → Meas.HistFam N K Ω),
+      (∀ (x : Fin N), A.IsHistory x (ρ x)) →
+        A.ZeroError ρ →
+          ENNReal.ofReal (2 / Real.arcsin (2 / √↑N) * (Real.pi / 8 + 1 / 4) * (1 - 2 / ↑N)) ≤ (∑ x, A.cost (ρ x)) / ↑N
+def TheoremS.Meas.TheoremSMeas' : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (Ω : ℕ → Type) [inst_4 : (m : ℕ) → MeasurableSpace (Ω m)]
+      [∀ (m : ℕ), StandardBorelSpace (Ω m)] [∀ (m : ℕ), Nonempty (Ω m)] (A : Meas.Alg N K Ω)
+      (ρ : Fin N → Meas.HistFam N K Ω),
+      (∀ (x : Fin N), A.IsHistory x (ρ x)) →
+        A.ZeroError ρ → ENNReal.ofReal ((Real.pi / 8 + 1 / 4) * √↑N - 4 / √↑N) ≤ (∑ x, A.cost (ρ x)) / ↑N
+'TheoremS.Meas.theoremSMeasGen' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Meas.theoremSMeasGen'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Meas.theoremSMeas' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Meas.theoremSMeas'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Meas.historyExists' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Meas.historyUnique' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+The statement file `TheoremS/Meas/Statement.lean` was copied from the paper's working repository, where it was reviewed by an AI agent that had not seen the proof (verdict: faithful to the paper's model, no required changes). As in Builds 1 and 2, the module names and namespace were changed (`QC22.MeasS` to `TheoremS.Meas`), the comments and docstrings were rewritten without references to the working repository, and a licence header was added. No definition changed. With comments and docstrings removed, the whole difference between the reviewed file and `TheoremS/Meas/Statement.lean` is:
+
+```
+--- StageD/QC22MeasStatement.lean (code only)
++++ TheoremS/Meas/Statement.lean (code only)
+@@ -2 +2 @@
+-namespace QC22.MeasS
++namespace TheoremS.Meas
+@@ -190 +190 @@
+-end QC22.MeasS
++end TheoremS.Meas
+```
+
+Both files have 190 lines of code. SHA-256 of the reviewed file: `83b3a363a30c3dc9e909a6ef5ef4c9f9d6d58c8a4179f50f636d119ee12f676e`; of `TheoremS/Meas/Statement.lean`: `57525b4822f36bfadc5edd97a20886f7cece0e2b8b914bc18fedc70ed28c8bef`. The eight proof files under `TheoremS/Meas/` differ from the working copies in the same way (namespace, import lines, the leading comment and the header), plus `QC22.FinS.` changed to `TheoremS.` in `Bound.lean` and `QC22.MeasS.flip` changed to `TheoremS.Meas.flip` in `Cell.lean`.
+
 ## Build 2: the countable model
 
 - Commit built: `57d12fae77a2e966b5e4027af7ea392e40af4b77` (adds `TheoremS/Inf/`, the countable model and its proof).
