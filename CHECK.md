@@ -1,10 +1,53 @@
-# Build check
+# Build checks
 
-This file records one build of this repository from a fresh clone. It was written after that build and is the only file added since the commit that was built.
+This file records builds of this repository from a fresh clone. Each section was written after its build, and the commit that adds or updates this file changes nothing else.
 
-## The build
+## Build 2: the countable model
 
-- Commit built: `9750267dcb04ce80d03eaf9001b4d0eba2d6ee53` (the parent of the commit that adds this file).
+- Commit built: `57d12fae77a2e966b5e4027af7ea392e40af4b77` (adds `TheoremS/Inf/`, the countable model and its proof).
+- Where: a Slurm compute node (`barley-03`), job 2027944, 8 CPUs, 26 November 2026, 16:29:04 to 16:35:55 PST.
+- Toolchain: elan installed fresh in the job folder, then `leanprover/lean4:v4.35.0` (Lean 4.35.0, commit `eb6cafb7290e8bd5f2937522d8d804f58f02bafc`, x86_64 Linux). Empty Lake and Mathlib caches at the start.
+- Steps, each with exit code 0:
+  1. `git clone` of a bundle of the commit above; `git rev-parse HEAD` matched it.
+  2. `grep -rnE "sorry|admit|native_decide|^axiom|unsafe" TheoremS/` found nothing (this covers `TheoremS/Inf/`).
+  3. `lake exe cache get`: 9,031 Mathlib files downloaded and unpacked.
+  4. `lake build`: 9,058 jobs, the ten `TheoremS` modules compiled from source (173 s wall, peak memory 7.5 GB). The job log keeps only the last 40 lines of build output; the warnings in them are the ones of Build 1, all in `TheoremS/Potential.lean`.
+  5. `lake env lean checks/Axioms.lean`.
+
+Output of the check file for the countable model (the output for `TheoremSFin`, `TheoremSFin'` is the same as in Build 1):
+
+```
+def TheoremS.Inf.TheoremSInf : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (A : Inf.Alg N K),
+      A.ZeroError →
+        ENNReal.ofReal (2 / Real.arcsin (2 / √↑N) * (Real.pi / 8 + 1 / 4) * (1 - 2 / ↑N)) ≤ (∑ x, A.cost x) / ↑N
+def TheoremS.Inf.TheoremSInf' : Prop :=
+∀ (N : ℕ),
+  4 ≤ N →
+    ∀ (K : Type) [inst : NormedAddCommGroup K] [inst_1 : InnerProductSpace ℂ K] [inst_2 : CompleteSpace K]
+      [TopologicalSpace.SeparableSpace K] (A : Inf.Alg N K),
+      A.ZeroError → ENNReal.ofReal ((Real.pi / 8 + 1 / 4) * √↑N - 4 / √↑N) ≤ (∑ x, A.cost x) / ↑N
+'TheoremS.Inf.theoremSInf' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TheoremS.Inf.theoremSInf'' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+The statement file `TheoremS/Inf/Statement.lean` was copied from the paper's working repository, where it was reviewed by an AI agent that had not seen the proof (verdict: faithful to the paper's model). As in Build 1, the module names and namespace were changed (`QC22.InfS` to `TheoremS.Inf`), the comments were rewritten and a licence header was added. No definition changed. With the leading comment block removed, the whole difference between the reviewed file and `TheoremS/Inf/Statement.lean` is:
+
+```
+-namespace QC22.InfS
++namespace TheoremS.Inf
+-end QC22.InfS
++end TheoremS.Inf
+```
+
+SHA-256 of the reviewed file: `d4e4e19d6b319dbd4696c4e5ba46849e0ab1fa67a7fbc099d1b8cbfe867897f8`; of `TheoremS/Inf/Statement.lean`: `aab40c674c7de5a055549d37a0761820492910940758173cbe7a0aeac39e3d8a`. The four proof files under `TheoremS/Inf/` differ from the working copies in the same way (namespace, import lines, the leading comment and the header), plus `open QC22.FinS` changed to `open TheoremS` and two comments that named a working file.
+
+## Build 1: the finite model
+
+- Commit built: `9750267dcb04ce80d03eaf9001b4d0eba2d6ee53` (the parent of `581ccba`, the commit that first added this file).
 - Where: a Slurm compute node (`barley-04`), job 2027805, 8 CPUs, 26 November 2026, 15:17:17 to 15:20:54 PST.
 - Toolchain: elan installed fresh in the job folder, then `leanprover/lean4:v4.35.0` (Lean 4.35.0, commit `eb6cafb7290e8bd5f2937522d8d804f58f02bafc`, x86_64 Linux). Empty Lake and Mathlib caches at the start.
 - Steps, each with exit code 0:
@@ -14,7 +57,7 @@ This file records one build of this repository from a fresh clone. It was writte
   4. `lake build`: 9,053 jobs, the five `TheoremS` modules compiled from source (69 s wall, peak memory 7.2 GB). Warnings only: two deprecated lemma names (`if_neg`, `if_pos`), two uses of the deprecated `push_neg`, and two `unnecessarySeqFocus` linter notes, all in `TheoremS/Potential.lean`.
   5. `lake env lean checks/Axioms.lean`.
 
-## Output of the check file
+### Output of the check file
 
 ```
 def TheoremS.TheoremSFin : Prop :=
@@ -32,7 +75,7 @@ def TheoremS.TheoremSFin' : Prop :=
 'TheoremS.theoremSFin'' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-## The statement file and the reviewed statement
+### The statement file and the reviewed statement
 
 The files here were copied from the paper's working repository, where the statement file was reviewed by an AI agent that had not seen the proof (verdict: faithful to the paper's model restricted to a finite workspace and finitely many outcomes, no required changes). For publication the module names and namespace were changed (`QC22.FinS` to `TheoremS`), the comments and docstrings were rewritten without references to the working repository, and a licence header was added. No definition changed. With comments and docstrings removed, the whole difference between the reviewed file and `TheoremS/Statement.lean` is:
 
